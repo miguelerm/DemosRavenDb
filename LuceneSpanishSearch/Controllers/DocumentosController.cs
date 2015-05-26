@@ -1,4 +1,5 @@
 ﻿using LuceneSpanishSearch.Models;
+using Raven.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,18 +10,34 @@ namespace LuceneSpanishSearch.Controllers
 {
     public class DocumentosController : Controller
     {
+        private IDocumentSession session;
+
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            session = DataBaseSession.Open();
+        }
+
+        protected override void OnActionExecuted(ActionExecutedContext filterContext)
+        {
+            session.Dispose();
+        }
+
         // GET: Documentos
         public ActionResult Index()
         {
-            var docs = new DocumentoIndexModel[] { };
-            // TODO: Consultar los documentos de la colección de RavenDB
+            var docs = session.Query<Documento>().ProjectFromIndexFieldsInto<DocumentoIndexModel>().ToList();
             return View(docs);
         }
 
         public ActionResult Editar(int id)
         {
-            var modelo = new DocumentoEditarModel();
-            // TODO: consultar el documento con el id indicado en la colección de RavenDB
+            var doc = session.Load<Documento>(id);
+            var modelo = new DocumentoEditarModel
+            {
+                Id = id,
+                Titulo = doc.Titulo,
+                Contenido = doc.Contenido
+            };
             return View(modelo);
         }
 
@@ -33,7 +50,10 @@ namespace LuceneSpanishSearch.Controllers
                 return View(modelo);
             }
 
-            // TODO: Guardar cambios en la colección de RavenDB.
+            var doc = session.Load<Documento>(id);
+            doc.Titulo = modelo.Titulo;
+            doc.Contenido = modelo.Contenido;
+            session.SaveChanges();
 
             return RedirectToAction("Index");
         }
@@ -52,15 +72,27 @@ namespace LuceneSpanishSearch.Controllers
                 return View(modelo);
             }
 
-            // TODO: Crar el documento en la colección de RavenDB.
+            session.Store(new Documento { 
+                Contenido = modelo.Contenido,
+                Titulo = modelo.Titulo,
+                FechaCreacion = DateTime.UtcNow
+            });
+
+            session.SaveChanges();
+
             return RedirectToAction("Index");
         }
 
 
         public ActionResult Eliminar(int id)
         {
-            var modelo = new DocumentoDetallesModel { Id = id };
-            // TODO: Consultar el documento en la colección de RavenDB.
+            var doc = session.Load<Documento>(id);
+            var modelo = new DocumentoDetallesModel { 
+                Id = id ,
+                FechaCreacion = doc.FechaCreacion,
+                Titulo = doc.Titulo,
+                Contenido = doc.Contenido
+            };
             return View(modelo);
         }
 
@@ -69,7 +101,8 @@ namespace LuceneSpanishSearch.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult ConfirmarEliminar(int id)
         {
-            // TODO: Eliminar el documento de la colección de RavenDb.
+            session.Delete<Documento>(id);
+            session.SaveChanges();
             return RedirectToAction("Index");
         }
     }
