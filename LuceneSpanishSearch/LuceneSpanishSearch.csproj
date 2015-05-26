@@ -159,6 +159,7 @@
     <Content Include="Raven.Studio.Html5.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Views\Documentos\Buscar.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

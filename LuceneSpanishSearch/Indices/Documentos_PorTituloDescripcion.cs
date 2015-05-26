@@ -14,11 +14,14 @@ namespace LuceneSpanishSearch.Indices
         {
             Map = documentos => from documento in documentos select new { documento.Titulo, documento.Contenido };
 
+            //var analyzerName = typeof(SpanishAnalyzer).AssemblyQualifiedName;
+
             Index(x => x.Titulo, FieldIndexing.Analyzed);
-            Analyze(x => x.Titulo, typeof(SpanishAnalyzer).AssemblyQualifiedName);
+            //Analyze(x => x.Titulo, analyzerName);
+            Suggestion(x => x.Titulo);
 
             Index(x => x.Contenido, FieldIndexing.Analyzed);
-            Analyze(x => x.Contenido, typeof(SpanishAnalyzer).AssemblyQualifiedName);
+            //Analyze(x => x.Contenido, analyzerName);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using LuceneSpanishSearch.Models;
+﻿using LuceneSpanishSearch.Indices;
+using LuceneSpanishSearch.Models;
+using Raven.Abstractions.Data;
 using Raven.Client;
 using System;
 using System.Collections.Generic;
@@ -105,5 +107,32 @@ namespace LuceneSpanishSearch.Controllers
             session.SaveChanges();
             return RedirectToAction("Index");
         }
+
+        public ActionResult Buscar(string criterio)
+        {
+            var resultados = new List<DocumentoIndexModel>();
+
+            if (string.IsNullOrWhiteSpace(criterio))
+            {
+                return View(resultados);
+            }
+
+            // buscar el criterio tanto en el titulo como en el nombre
+            resultados = session.Query<Documento>()
+                .Search(x => x.Titulo, criterio)
+                .ProjectFromIndexFieldsInto<DocumentoIndexModel>().ToList();
+
+            var sugerencias = DataBaseSession.Suggest("Documentos/PorTituloDescripcion", new SuggestionQuery { Field = "Titulo", Term = criterio }).Suggestions;
+
+            if (sugerencias.Any())
+            {
+                ViewBag.Sugerencias = sugerencias;
+            }
+
+            ViewBag.Criterio = criterio;
+
+            return View(resultados);
+        }
+
     }
 }

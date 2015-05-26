@@ -1,0 +1,87 @@
+﻿@model IEnumerable<LuceneSpanishSearch.Models.DocumentoIndexModel>
+
+@{
+    ViewBag.Title = "Buscar";
+}
+
+@using (Html.BeginForm(null, null, FormMethod.Get))
+{
+    <div>
+        <label for="criterio">Criterio de búsqueda</label>
+        <input type="text" id="criterio" name="criterio" value="@ViewBag.Criterio" />
+    </div>
+    <div>
+        <button type="submit">Buscar</button>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Regresar", "Index")
+</div>
+
+@if (ViewBag.Criterio != null)
+{
+    if (ViewBag.Sugerencias != null)
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Sugerencias:</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (string item in ViewBag.Sugerencias)
+                {
+                    <tr>
+                        <td>@item</td>
+                    </tr>   
+                }   
+            </tbody>
+        </table>
+    }
+    
+    if (Model == null || !Model.Any())
+    {
+        <p>No hay resultados de búsqueda</p>
+    }
+    else
+    {
+        <div>
+            <h2>Resultados de busqueda del criterio @ViewBag.Criterio</h2>
+
+
+            <table>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.FechaCreacion)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Titulo)
+                    </th>
+                    <th></th>
+                </tr>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.FechaCreacion)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Titulo)
+                        </td>
+                        <td>
+                            @Html.ActionLink("Editar", "Editar", new { id = item.Id }) |
+                        </td>
+                    </tr>
+                }
+
+            </table>
+        </div>
+    }
+    
+}
+
+
+
+
